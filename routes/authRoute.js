@@ -13,6 +13,7 @@ router.post('/signup', async (req, res, next) => {
     try {
         const oldUser = await User.findOne({email})
         if(oldUser){
+            console.log('old user')
             return next('user already exist please login')
         }
         const hashPassword = await bcrypt.hash(password, 10);
@@ -23,7 +24,7 @@ router.post('/signup', async (req, res, next) => {
             password: hashPassword,
         })
         const data = await newUser.save();
-        console.log(data);
+        // console.log(data);
         // token generate
         const token = await jwt.sign({email}, process.env.JWT_SECRET, {expiresIn: '1d'});
         res.send({accessToken:token, data});
@@ -41,23 +42,21 @@ router.post('/login', async (req, res, next) => {
     const user = await User.findOne({email});
     // if user exist then run this code
     if(user) {
-
        const isValidPassword = await bcrypt.compare(password, user.password);
-
        if(isValidPassword){
          // token generate
          const token = jwt.sign({email}, process.env.JWT_SECRET);
          return res.send({ accessToken: token });
        }else{
-        return next('password is not valid')
+           return next('password is not valid')
        }
-
-    }else {
+    }
+    else {
         return next('user not found please sing up')
     }
    
    } catch (err) {
-    console.log(err)
+      console.log(err)
       res.status(403).send({ error : 'authentication failed'})
    }
 })
@@ -67,7 +66,8 @@ router.post('/getUser', verifyToken, async (req,res) => {
        const {email} = req.decoded;
        const user = await User.findOne({email});
        res.send(user);
-    } catch{
+    } catch (err) {
+       next(err)
        res.send({message: 'user not logged yet'})
     }
 })

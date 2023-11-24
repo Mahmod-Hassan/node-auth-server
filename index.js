@@ -2,7 +2,7 @@ const express = require('express');
 const mongoose = require('mongoose');
 const cors = require('cors');
 require('dotenv').config();
-
+const port = process.env.PORT || 7000;
 // express app initialization
 const app = express();
 
@@ -32,6 +32,9 @@ app.use('/auth', authRoute);
 
 // if path not match this middleware will catch the error
 app.use((req, res, next) => {
+      // when we will give inside next('somthing')
+      // express will consider it as an error
+      // this error will goes to our custom error handler
     next('requested url is not found');
   })
 
@@ -40,12 +43,12 @@ app.use((req, res, next) => {
     if(res.headersSent){
       return next(err)
     }
-    res.send({error: err})
+    res.send({ error: err, message: 'error from my custom errorHndler' });
   })
 app.use(errorHandler);
 
 
    // listening on port 5000
-app.listen(5000, () => {
-  console.log(`Example app listening on port 5000`)
+app.listen(port, () => {
+  console.log(`Example app listening on port ${port}`)
 })
